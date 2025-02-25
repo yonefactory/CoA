@@ -5,6 +5,9 @@ from datetime import datetime
 import re
 import os
 
+# 🔹 환경 변수에서 DeepL API 키 불러오기
+DEEPL_API_KEY = os.getenv("DEEPL_API_KEY", "your-deepl-api-key")
+
 # 🔹 텔레그램 봇 설정
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "your-chat-id")
@@ -40,26 +43,24 @@ def extract_article_summary(article_url):
         summary_sentences = sentences[:5]  # 최대 5문장 선택
         summary = "\n".join([f"• {sentence.strip()}." for sentence in summary_sentences])
 
-        # 한국어 번역 (Google Translate API 사용)
+        # 한국어 번역 (DeepL API 사용)
         translated_summary = translate_to_korean(summary)
         return translated_summary
     except Exception as e:
         return f"요약 중 오류 발생: {e}"
 
 def translate_to_korean(text):
-    """Google Translate API를 사용하여 한국어 번역"""
-    url = "https://translate.googleapis.com/translate_a/single"
+    """DeepL API를 사용하여 한국어 번역"""
+    url = "https://api-free.deepl.com/v2/translate"
     params = {
-        "client": "gtx",
-        "sl": "en",
-        "tl": "ko",
-        "dt": "t",
-        "q": text
+        "auth_key": DEEPL_API_KEY,
+        "text": text,
+        "target_lang": "KO"
     }
     try:
-        response = requests.get(url, params=params)
+        response = requests.post(url, data=params)
         if response.status_code == 200:
-            translated_text = response.json()[0][0][0]
+            translated_text = response.json()["translations"][0]["text"]
             return translated_text
         else:
             return "번역 오류 발생."
