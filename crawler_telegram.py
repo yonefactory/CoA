@@ -8,6 +8,10 @@ import os
 # 🔹 텔레그램 봇 설정
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")  # 환경변수 또는 직접 입력
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "your-chat-id")
+TELEGRAM_BOT_TOKEN = "7802394343:AAHqzzij5wD5ms_JkYN3oWz6VvICPMYJNCo"
+#CHAT_ID = "7562974684"
+TELEGRAM_CHAT_ID = "-4738445656"
+
 
 # 🔹 크롤링할 URL
 url = 'https://9to5mac.com/'
