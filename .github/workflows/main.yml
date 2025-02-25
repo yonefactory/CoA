@@ -1,4 +1,4 @@
-name: Telegram News Bot
+name: Telegram News Bot with DeepL
 
 on:
   push:
@@ -29,6 +29,7 @@ jobs:
 
       - name: Run Scraper
         env:
+          DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python crawler_telegram.py
