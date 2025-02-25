@@ -1,12 +1,12 @@
-name: Telegram News Bot with DeepL
+name: Telegram News Bot with Personal & Group Chats
 
 on:
   push:
     branches:
-      - main  # main 브랜치로 push될 때 실행
+      - main
   schedule:
     - cron: '0 * * * *'  # 매시간 실행 (UTC 기준)
-  workflow_dispatch:  # 수동 실행 가능
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -32,6 +32,7 @@ jobs:
           DEEPL_API_KEY: ${{ secrets.DEEPL_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_CHAT_ID_GROUP: ${{ secrets.TELEGRAM_CHAT_ID_GROUP }}
         run: python crawler_telegram.py
 
       - name: Commit and Push Changes
