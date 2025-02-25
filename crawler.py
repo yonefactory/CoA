@@ -3,23 +3,26 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 
-# 크롤링할 URL 설정
 url = 'https://9to5mac.com/'
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+}
 
-# 웹 페이지 요청
-response = requests.get(url)
+response = requests.get(url, headers=headers)
+
 if response.status_code == 200:
-    # 페이지 파싱
     soup = BeautifulSoup(response.text, 'html.parser')
 
-    # 기사 제목과 링크 추출
+    # 🔹 HTML 구조 확인 후 'h2.post-title' 대신 새로운 선택자로 변경
     articles = []
-    for article in soup.find_all('h2', class_='post-title'):
-        title = article.get_text(strip=True)
-        link = article.find('a')['href']
-        articles.append({"title": title, "link": link})
+    for article in soup.find_all('article'):
+        title_tag = article.find('h2')
+        if title_tag and title_tag.a:
+            title = title_tag.a.get_text(strip=True)
+            link = title_tag.a['href']
+            articles.append({"title": title, "link": link})
 
-    # JSON 파일로 저장
+    # JSON 저장
     scraped_data = {
         "timestamp": datetime.utcnow().isoformat(),
         "articles": articles
@@ -27,7 +30,7 @@ if response.status_code == 200:
 
     with open("scraped_data.json", "w", encoding="utf-8") as f:
         json.dump(scraped_data, f, indent=4, ensure_ascii=False)
-    
-    print("Scraping successful. Data saved to scraped_data.json.")
+
+    print(f"✅ {len(articles)} articles scraped successfully.")
 else:
-    print(f"Failed to retrieve the page. Status code: {response.status_code}")
+    print(f"❌ Failed to retrieve the page. Status code: {response.status_code}")
