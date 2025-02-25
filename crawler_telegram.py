@@ -24,7 +24,7 @@ else:
     sent_articles = []
 
 def extract_article_summary(article_url):
-    """기사 본문을 가져와 3줄 요약 후 한국어 번역"""
+    """기사 본문을 가져와 3~5줄 요약 후 한국어 번역"""
     try:
         article_response = requests.get(article_url, headers=headers)
         if article_response.status_code != 200:
@@ -35,9 +35,10 @@ def extract_article_summary(article_url):
         text = " ".join([p.get_text() for p in paragraphs])
         text = re.sub(r'\s+', ' ', text).strip()
 
-        # 3줄 요약 (간단한 방식)
+        # 3~5줄 요약 (문장 단위로 3~5개 선택)
         sentences = text.split('. ')
-        summary = ". ".join(sentences[:3]) + "."
+        summary_sentences = sentences[:5]  # 최대 5문장 선택
+        summary = "\n".join([f"• {sentence.strip()}." for sentence in summary_sentences])
 
         # 한국어 번역 (Google Translate API 사용)
         translated_summary = translate_to_korean(summary)
