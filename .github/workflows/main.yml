@@ -1,4 +1,3 @@
-
 name: 9to5Mac Web Scraper
 
 on:
@@ -7,6 +6,7 @@ on:
       - main  # main 브랜치로 push될 때 실행
   schedule:
     - cron: '0 6 * * *'  # 매일 6AM UTC (한국시간 3PM)에 실행
+  workflow_dispatch:  # 수동 실행 (GitHub Actions에서 직접 실행 가능)
 
 jobs:
   scrape:
