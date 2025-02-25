@@ -59,47 +59,38 @@ if __name__ == "__main__":
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        new_articles = []
+        articles = []
         for article in soup.find_all('article'):
             title_tag = article.find('h2')
             if title_tag and title_tag.a:
                 title = title_tag.a.get_text(strip=True)
                 link = title_tag.a['href']
+                summary = extract_article_summary(link)
+                articles.append({
+                    "title": title,
+                    "summary": summary,
+                    "link": link
+                })
 
-                if link not in sent_articles:
-                    summary = extract_article_summary(link)
-                    new_articles.append({
-                        "title": title,
-                        "summary": summary,
-                        "link": link
-                    })
-                    sent_articles.append(link)  # 새 기사 저장
+        # ✅ 새로운 기사 필터링
+        new_articles = [a for a in articles if a["link"] not in sent_articles]
 
-        # ✅ 새로운 기사가 있을 경우 텔레그램 전송
         if new_articles:
+            # 🔹 새로운 기사 전송
             for article in new_articles:
                 message = f"*{article['title']}*\n\n_{article['summary']}_\n\n[🔗 기사 보기]({article['link']})"
                 send_telegram_message(message)
+                sent_articles.append(article["link"])
             print(f"✅ {len(new_articles)}개의 새 기사를 텔레그램으로 전송했습니다.")
         else:
-            # ✅ 새로운 기사가 없을 때, 마지막 기사라도 다시 전송
-            if sent_articles:
-                last_article_link = sent_articles[-1]
-                last_article = None
-                for article in new_articles:
-                    if article["link"] == last_article_link:
-                        last_article = article
-                        break
-
-                if last_article:
-                    message = f"📢 새로운 기사가 없습니다. 대신 마지막 기사 다시 공유합니다:\n\n*{last_article['title']}*\n\n_{last_article['summary']}_\n\n[🔗 기사 보기]({last_article['link']})"
-                    send_telegram_message(message)
-                    print("✅ 새로운 기사가 없어 마지막 기사를 다시 보냈습니다.")
-                else:
-                    send_telegram_message("📢 새로운 기사가 없습니다. (이전 기사도 없음)")
-                    print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
+            # 🔹 새로운 기사가 없으면 최신 기사 1개 전송
+            if articles:
+                latest_article = articles[0]  # 최신 기사 1개 선택
+                message = f"📢 새로운 기사가 없습니다. 대신 최신 기사 공유합니다:\n\n*{latest_article['title']}*\n\n_{latest_article['summary']}_\n\n[🔗 기사 보기]({latest_article['link']})"
+                send_telegram_message(message)
+                print("✅ 새로운 기사가 없어 최신 기사를 보냈습니다.")
             else:
-                send_telegram_message("📢 새로운 기사가 없습니다. (이전 기사도 없음)")
+                send_telegram_message("📢 새로운 기사가 없습니다. (사이트에 기사가 없음)")
                 print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
 
         # ✅ 보낸 기사 목록 저장 (중복 방지)
