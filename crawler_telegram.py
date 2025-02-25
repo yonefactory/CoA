@@ -6,7 +6,7 @@ import re
 import os
 
 # 🔹 텔레그램 봇 설정
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")  # 환경변수 또는 직접 입력
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "your-chat-id")
 
 # 🔹 크롤링할 URL
@@ -24,7 +24,7 @@ else:
     sent_articles = []
 
 def extract_article_summary(article_url):
-    """기사 본문을 가져와 3줄 요약 반환"""
+    """기사 본문을 가져와 3줄 요약 후 한국어 번역"""
     try:
         article_response = requests.get(article_url, headers=headers)
         if article_response.status_code != 200:
@@ -35,13 +35,35 @@ def extract_article_summary(article_url):
         text = " ".join([p.get_text() for p in paragraphs])
         text = re.sub(r'\s+', ' ', text).strip()
 
-        # 3줄 요약 (간단한 방식, 필요시 AI 모델 활용 가능)
+        # 3줄 요약 (간단한 방식)
         sentences = text.split('. ')
         summary = ". ".join(sentences[:3]) + "."
 
-        return summary
+        # 한국어 번역 (Google Translate API 사용)
+        translated_summary = translate_to_korean(summary)
+        return translated_summary
     except Exception as e:
         return f"요약 중 오류 발생: {e}"
+
+def translate_to_korean(text):
+    """Google Translate API를 사용하여 한국어 번역"""
+    url = "https://translate.googleapis.com/translate_a/single"
+    params = {
+        "client": "gtx",
+        "sl": "en",
+        "tl": "ko",
+        "dt": "t",
+        "q": text
+    }
+    try:
+        response = requests.get(url, params=params)
+        if response.status_code == 200:
+            translated_text = response.json()[0][0][0]
+            return translated_text
+        else:
+            return "번역 오류 발생."
+    except Exception as e:
+        return f"번역 중 오류 발생: {e}"
 
 def send_telegram_message(message):
     """텔레그램 메시지 전송"""
