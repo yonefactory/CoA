@@ -52,8 +52,8 @@ if response.status_code == 200:
 
             articles.append({
                 "title": title,
-                "link": link,
-                "summary": summary
+                "summary": summary,
+                "link": link
             })
 
     # JSON 파일 저장
