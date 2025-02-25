@@ -9,10 +9,6 @@ import os
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")  # 환경변수 또는 직접 입력
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "your-chat-id")
 
-TELEGRAM_BOT_TOKEN = "8021237242:AAEd3zvs2VnhoLY1TjELgqU8oaN7uygmhCk"
-TELEGRAM_CHAT_ID = "5758369336"
-
-
 # 🔹 크롤링할 URL
 url = 'https://9to5mac.com/'
 headers = {
@@ -86,8 +82,25 @@ if __name__ == "__main__":
                 send_telegram_message(message)
             print(f"✅ {len(new_articles)}개의 새 기사를 텔레그램으로 전송했습니다.")
         else:
-            send_telegram_message("📢 새로운 기사가 없습니다.")
-            print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
+            # ✅ 새로운 기사가 없을 때, 마지막 기사라도 다시 전송
+            if sent_articles:
+                last_article_link = sent_articles[-1]
+                last_article = None
+                for article in new_articles:
+                    if article["link"] == last_article_link:
+                        last_article = article
+                        break
+
+                if last_article:
+                    message = f"📢 새로운 기사가 없습니다. 대신 마지막 기사 다시 공유합니다:\n\n*{last_article['title']}*\n\n_{last_article['summary']}_\n\n[🔗 기사 보기]({last_article['link']})"
+                    send_telegram_message(message)
+                    print("✅ 새로운 기사가 없어 마지막 기사를 다시 보냈습니다.")
+                else:
+                    send_telegram_message("📢 새로운 기사가 없습니다. (이전 기사도 없음)")
+                    print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
+            else:
+                send_telegram_message("📢 새로운 기사가 없습니다. (이전 기사도 없음)")
+                print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
 
         # ✅ 보낸 기사 목록 저장 (중복 방지)
         with open(SENT_ARTICLES_FILE, "w", encoding="utf-8") as f:
