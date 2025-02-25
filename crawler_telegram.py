@@ -5,12 +5,17 @@ from datetime import datetime
 import re
 import os
 
-# 🔹 환경 변수에서 DeepL API 키 불러오기
+# 🔹 DeepL API 키 가져오기
 DEEPL_API_KEY = os.getenv("DEEPL_API_KEY", "your-deepl-api-key")
 
 # 🔹 텔레그램 봇 설정
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "your-chat-id")
+
+# 🔹 개인 및 그룹 챗방 ID 불러오기
+TELEGRAM_CHAT_IDS = [
+    os.getenv("TELEGRAM_CHAT_ID", "your-chat-id"),  # 개인 채팅방
+    os.getenv("TELEGRAM_CHAT_ID_GROUP", "your-group-chat-id"),  # 그룹 채팅방
+]
 
 # 🔹 크롤링할 URL
 url = 'https://9to5mac.com/'
@@ -68,15 +73,16 @@ def translate_to_korean(text):
         return f"번역 중 오류 발생: {e}"
 
 def send_telegram_message(message):
-    """텔레그램 메시지 전송"""
-    telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message,
-        "parse_mode": "Markdown"
-    }
-    response = requests.post(telegram_api_url, json=payload)
-    return response.status_code
+    """개인 및 그룹 챗방으로 메시지 전송"""
+    for chat_id in TELEGRAM_CHAT_IDS:
+        if chat_id:  # 빈 값이 아닐 경우 전송
+            telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            payload = {
+                "chat_id": chat_id,
+                "text": message,
+                "parse_mode": "Markdown"
+            }
+            requests.post(telegram_api_url, json=payload)
 
 if __name__ == "__main__":
     response = requests.get(url, headers=headers)
