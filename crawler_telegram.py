@@ -7,12 +7,7 @@ import os
 # 🔹 환경 변수 로드
 DEEPL_API_KEY = os.getenv("DEEPL_API_KEY")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
-# 🔹 개인 및 그룹 챗방 ID 불러오기
-TELEGRAM_CHAT_IDS = [
-    os.getenv("TELEGRAM_CHAT_ID"),
-    os.getenv("TELEGRAM_CHAT_ID_GROUP"),
-]
+TELEGRAM_CHAT_ID_GROUP = os.getenv("TELEGRAM_CHAT_ID_GROUP")  # 그룹 챗방 ID
 
 # 🔹 크롤링할 URL
 url = 'https://9to5mac.com/'
@@ -70,16 +65,15 @@ def translate_to_korean(text):
         return f"번역 중 오류 발생: {e}"
 
 def send_telegram_message(message):
-    """개인 및 그룹 챗방으로 메시지 전송"""
-    for chat_id in TELEGRAM_CHAT_IDS:
-        if chat_id:  # 빈 값이 아닐 경우 전송
-            telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": chat_id,
-                "text": message,
-                "parse_mode": "Markdown"
-            }
-            requests.post(telegram_api_url, json=payload)
+    """그룹 챗방으로만 메시지 전송"""
+    if TELEGRAM_CHAT_ID_GROUP:  # 그룹 챗방 ID가 설정된 경우에만 실행
+        telegram_api_url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": TELEGRAM_CHAT_ID_GROUP,
+            "text": message,
+            "parse_mode": "Markdown"
+        }
+        requests.post(telegram_api_url, json=payload)
 
 if __name__ == "__main__":
     response = requests.get(url, headers=headers)
@@ -108,7 +102,7 @@ if __name__ == "__main__":
                 message = f"*{article['title']}*\n\n_{article['summary']}_\n\n[🔗 기사 보기]({article['link']})"
                 send_telegram_message(message)
                 sent_articles.append(article["link"])
-            print(f"✅ {len(new_articles)}개의 새 기사를 텔레그램으로 전송했습니다.")
+            print(f"✅ {len(new_articles)}개의 새 기사를 그룹 챗방으로 전송했습니다.")
         else:
             # ✅ 새로운 기사가 없으면 "📢 새로운 기사가 없습니다." 메시지만 전송
             send_telegram_message("📢 새로운 기사가 없습니다.")
