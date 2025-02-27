@@ -1,20 +1,17 @@
 import requests
 from bs4 import BeautifulSoup
 import json
-from datetime import datetime
 import re
 import os
 
-# 🔹 DeepL API 키 가져오기
-DEEPL_API_KEY = os.getenv("DEEPL_API_KEY", "your-deepl-api-key")
-
-# 🔹 텔레그램 봇 설정
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your-telegram-bot-token")
+# 🔹 환경 변수 로드
+DEEPL_API_KEY = os.getenv("DEEPL_API_KEY")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # 🔹 개인 및 그룹 챗방 ID 불러오기
 TELEGRAM_CHAT_IDS = [
-    os.getenv("TELEGRAM_CHAT_ID", "your-chat-id"),  # 개인 채팅방
-    os.getenv("TELEGRAM_CHAT_ID_GROUP", "your-group-chat-id"),  # 그룹 채팅방
+    os.getenv("TELEGRAM_CHAT_ID"),
+    os.getenv("TELEGRAM_CHAT_ID_GROUP"),
 ]
 
 # 🔹 크롤링할 URL
@@ -113,15 +110,9 @@ if __name__ == "__main__":
                 sent_articles.append(article["link"])
             print(f"✅ {len(new_articles)}개의 새 기사를 텔레그램으로 전송했습니다.")
         else:
-            # 🔹 새로운 기사가 없으면 최신 기사 1개 전송
-            if articles:
-                latest_article = articles[0]  # 최신 기사 1개 선택
-                message = f"📢 새로운 기사가 없습니다. 대신 최신 기사 공유합니다:\n\n*{latest_article['title']}*\n\n_{latest_article['summary']}_\n\n[🔗 기사 보기]({latest_article['link']})"
-                send_telegram_message(message)
-                print("✅ 새로운 기사가 없어 최신 기사를 보냈습니다.")
-            else:
-                send_telegram_message("📢 새로운 기사가 없습니다. (사이트에 기사가 없음)")
-                print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
+            # ✅ 새로운 기사가 없으면 "📢 새로운 기사가 없습니다." 메시지만 전송
+            send_telegram_message("📢 새로운 기사가 없습니다.")
+            print("✅ 새로운 기사가 없어 '새로운 기사가 없습니다' 메시지를 보냈습니다.")
 
         # ✅ 보낸 기사 목록 저장 (중복 방지)
         with open(SENT_ARTICLES_FILE, "w", encoding="utf-8") as f:
